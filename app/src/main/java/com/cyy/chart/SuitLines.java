@@ -265,11 +265,11 @@ public class SuitLines extends View {
     /**
      * 是否显示y轴的辅助刻度线
      */
-    private boolean showYGrid = true;
+    private boolean showYGrid = false;
     /**
      * 是否显示x轴的辅助刻度线
      */
-    private boolean showXGrid = true;
+    private boolean showXGrid = false;
 
     /**
      * lines在当前可见区域的边缘点
@@ -452,6 +452,8 @@ public class SuitLines extends View {
         canvas.restore();
         // y
         drawY(canvas);
+        // X轴超出线
+        canvas.drawLine(yArea.left, yArea.bottom, yArea.right, yArea.bottom, xyPaint);
     }
 
     /**
@@ -821,10 +823,10 @@ public class SuitLines extends View {
                 float y, yAxis;
                 if (i == 0) {
                     extY = minAndMaxOfY[0];
-                    y = yAxis = yRect.bottom;
+                    y = yAxis = yRect.bottom - basePadding; // 跟X轴有一定的距离
                 } else if (i == countOfY - 1) {
                     extY = minAndMaxOfY[1];
-                    y = yRect.top + Util.getTextHeight(xyPaint) + 3;
+                    y = yRect.top + Util.getTextHeight(xyPaint) + 3 + basePadding;
                     yAxis = yRect.top;
                 } else {
                     extY = minAndMaxOfY[0] + (minAndMaxOfY[1] - minAndMaxOfY[0]) / (countOfY - 1) * i;
@@ -957,7 +959,7 @@ public class SuitLines extends View {
         float textWidth = Math.max(xyPaint.measureText(String.valueOf(minAndMaxOfY[0])),
                 xyPaint.measureText(String.valueOf(minAndMaxOfY[1])));
         float maxWidth = Math.max(xyPaint.measureText("00"), textWidth);
-        RectF validArea = new RectF(getPaddingLeft() + basePadding, getPaddingTop() + basePadding,
+        RectF validArea = new RectF(getPaddingLeft(), getPaddingTop() + basePadding,
                 getMeasuredWidth() - getPaddingRight() - basePadding, getMeasuredHeight() - getPaddingBottom());
         yArea = new RectF(validArea.left, validArea.top,
                 validArea.left + maxWidth + basePadding,
