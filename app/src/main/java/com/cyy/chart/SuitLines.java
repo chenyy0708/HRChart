@@ -120,7 +120,7 @@ public class SuitLines extends View {
      * 默认画笔的颜色，索引0位置为画笔颜色，整个数组为shader颜色
      */
     private int[] defaultLineColor = {Color.parseColor("#6FBA2C")};
-    private int hintColor = Color.RED;
+    private int hintColor = Color.parseColor("#6FBA2C");
     /**
      * xy轴文字颜色和大小
      */
@@ -246,7 +246,7 @@ public class SuitLines extends View {
     /**
      * 是否需要边缘反馈效果
      */
-    private boolean needEdgeEffect = true;
+    private boolean needEdgeEffect = false;
     private int edgeEffectColor = Color.GRAY;
     /**
      * fill形态下，是否绘制边缘线
@@ -315,6 +315,8 @@ public class SuitLines extends View {
                 scroller.abortAnimation();
                 initOrResetVelocityTracker();
                 velocityTracker.addMovement(event);
+                onTap(event.getX(), event.getY());
+                onChartTouchListener.OnChartTouchDown(event.getX(), event.getY());
                 super.onTouchEvent(event);
                 return true;
             case MotionEvent.ACTION_POINTER_DOWN:
@@ -332,6 +334,8 @@ public class SuitLines extends View {
                         edgeEffectRight.onPull(Math.abs(orientationX) / linesArea.height());
                     }
                 }
+                onTap(event.getX(), event.getY());
+                onChartTouchListener.OnChartTouchMove(event.getX(), event.getY());
                 break;
             case MotionEvent.ACTION_POINTER_UP: // 计算出正确的追踪手指
                 int minID = event.getPointerId(0);
@@ -367,6 +371,11 @@ public class SuitLines extends View {
                     edgeEffectRight.onRelease();
                 }
                 lastX = event.getX();
+                // 隐藏marker
+                hintPaint.setAlpha(255);
+                clickIndexs = null;
+                postInvalidate();
+                onChartTouchListener.OnChartTouchUp(event.getX(), event.getY());
                 break;
         }
 
@@ -438,7 +447,7 @@ public class SuitLines extends View {
             drawExsitDirectly(canvas);
             // hint
             if (clickIndexs != null) {
-                drawClickHint(canvas);
+//                drawClickHint(canvas);
             }
         } else {
             // 因为手指或fling计算出的offset不是连续按1px递增/减的，即无法准确地确定当前suitEdge和linesArea之间的相对位置
@@ -517,28 +526,30 @@ public class SuitLines extends View {
                 if (clickHintAnimator != null && clickHintAnimator.isRunning()) {
                     clickHintAnimator.removeAllUpdateListeners();
                     clickHintAnimator.cancel();
-                    hintPaint.setAlpha(100);
+                    hintPaint.setAlpha(255);
                     clickIndexs = null;
                     invalidate();
                 }
                 clickIndexs = new int[]{realIndex, mostMatchY};
-                clickHintAnimator = ValueAnimator.ofInt(100, 30);
-                clickHintAnimator.setDuration(800);
-                clickHintAnimator.setInterpolator(linearInterpolator);
-                clickHintAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        int cur = (Integer) animation.getAnimatedValue();
-                        if (cur <= 30) {
-                            hintPaint.setAlpha(100);
-                            clickIndexs = null;
-                        } else {
-                            hintPaint.setAlpha(cur);
-                        }
-                        postInvalidate();
-                    }
-                });
-                clickHintAnimator.start();
+                hintPaint.setAlpha(0);
+                postInvalidate();
+//                clickHintAnimator = ValueAnimator.ofInt(100, 30);
+//                clickHintAnimator.setDuration(800);
+//                clickHintAnimator.setInterpolator(linearInterpolator);
+//                clickHintAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//                    @Override
+//                    public void onAnimationUpdate(ValueAnimator animation) {
+//                        int cur = (Integer) animation.getAnimatedValue();
+//                        if (cur <= 30) {
+//                            hintPaint.setAlpha(100);
+//                            clickIndexs = null;
+//                        } else {
+//                            hintPaint.setAlpha(cur);
+//                        }
+//                        postInvalidate();
+//                    }
+//                });
+//                clickHintAnimator.start();
             }
         }
     }
@@ -742,20 +753,20 @@ public class SuitLines extends View {
      */
     private void drawClickHint(Canvas canvas) {
         Unit cur = datas.get(clickIndexs[1]).get(clickIndexs[0]);
-        canvas.drawLine(datas.get(clickIndexs[1]).get(suitEdge[0]).getXY().x, cur.getXY().y,
-                datas.get(clickIndexs[1]).get(suitEdge[1]).getXY().x, cur.getXY().y, hintPaint);
+//        canvas.drawLine(datas.get(clickIndexs[1]).get(suitEdge[0]).getXY().x, cur.getXY().y,
+//                datas.get(clickIndexs[1]).get(suitEdge[1]).getXY().x, cur.getXY().y, hintPaint);
         canvas.drawLine(cur.getXY().x, linesArea.bottom,
                 cur.getXY().x, linesArea.top, hintPaint);
         RectF bak = new RectF(hintArea);
         bak.offset(-offset, 0);
-        hintPaint.setAlpha(100);
+        hintPaint.setAlpha(255);
         hintPaint.setStyle(Paint.Style.FILL);
         canvas.drawRect(bak, hintPaint);
         hintPaint.setColor(Color.WHITE);
-        if (!TextUtils.isEmpty(cur.getExtX())) {
-            canvas.drawText("x : " + cur.getExtX(), bak.centerX(), bak.centerY() - 12, hintPaint);
-        }
-        canvas.drawText("y : " + cur.getValue(), bak.centerX(),
+//        if (!TextUtils.isEmpty(cur.getExtX())) {
+//            canvas.drawText("x : " + cur.getExtX(), bak.centerX(), bak.centerY() - 12, hintPaint);
+//        }
+        canvas.drawText(String.valueOf(cur.getValue()), bak.centerX(),
                 bak.centerY() + 12 + Util.getTextHeight(hintPaint), hintPaint);
         hintPaint.setColor(hintColor);
     }
@@ -802,7 +813,7 @@ public class SuitLines extends View {
                     xAxis = xRect.right;
                     continue; // 最后一个数据不需要画辅助线
                 } else {
-                    xAxis = xRect.right - realBetween * (datas.get(0).size() - 1) / (datas.get(0).size() - 1) * i;
+                    xAxis = xRect.right - xGridBuffer.getWidth() / (datas.get(0).size() - 1) * i;
                 }
                 xCanvas.drawLine(xAxis, 0, xAxis, xCanvas.getHeight(), xyPaint);
             }
@@ -970,6 +981,7 @@ public class SuitLines extends View {
                 validArea.bottom - Util.getTextHeight(xyPaint) - basePadding * 2);
         xArea = new RectF(yArea.right, yArea.bottom, validArea.right, validArea.bottom);
         linesArea = new RectF(yArea.right + 1, yArea.top, xArea.right, yArea.bottom);
+        if (onChartInitListener != null) onChartInitListener.onChartInit(linesArea);
         hintArea = new RectF(linesArea.right - linesArea.right / 4, linesArea.top,
                 linesArea.right, linesArea.top + linesArea.height() / 4);
     }
@@ -980,8 +992,8 @@ public class SuitLines extends View {
      */
     private void calcUnitXY() {
         // X轴最大可见数
-//        maxOfVisible = datas.get(0).size();
-        maxOfVisible = 6;
+        maxOfVisible = datas.get(0).size();
+//        maxOfVisible = 6;
         float absValueOfY = Math.abs(minAndMaxOfY[1] - minAndMaxOfY[0]);
         int realNum = Math.min(datas.get(0).size(), maxOfVisible);
         realBetween = linesArea.width() / (realNum - 1);
@@ -1018,7 +1030,7 @@ public class SuitLines extends View {
         if (clickHintAnimator != null && clickHintAnimator.isRunning()) {
             clickHintAnimator.removeAllUpdateListeners();
             clickHintAnimator.cancel();
-            hintPaint.setAlpha(100);
+            hintPaint.setAlpha(255);
             clickHintAnimator = null;
         }
         if (!animators.isEmpty()) {
@@ -1495,5 +1507,28 @@ public class SuitLines extends View {
                 }
             });
         }
+    }
+
+    private onChartTouchListener onChartTouchListener;
+    private onChartInitListener onChartInitListener;
+
+    public void setOnChartInitListener(SuitLines.onChartInitListener onChartInitListener) {
+        this.onChartInitListener = onChartInitListener;
+    }
+
+    public void setOnChartTouchListener(SuitLines.onChartTouchListener onChartTouchListener) {
+        this.onChartTouchListener = onChartTouchListener;
+    }
+
+    public interface onChartTouchListener {
+        void OnChartTouchDown(float downX, float downY);
+
+        void OnChartTouchMove(float moveX, float moveY);
+
+        void OnChartTouchUp(float upX, float upY);
+    }
+
+    public interface onChartInitListener {
+        void onChartInit(RectF linesArea);
     }
 }
