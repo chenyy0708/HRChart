@@ -43,9 +43,6 @@ public class MainActivity extends Activity {
             lines.add(new Unit(50, "2017-12"));
             lines.add(new Unit(750, "2018-01"));
             lines.add(new Unit(1501, "2018-02"));
-            lines.add(new Unit(500, "2018-03"));
-            lines.add(new Unit(600, "2018-04"));
-            lines.add(new Unit(489, "2018-05"));
             chart.getSuitlines().feedWithAnim(lines);
             return;
         }

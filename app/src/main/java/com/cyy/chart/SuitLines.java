@@ -458,7 +458,7 @@ public class SuitLines extends View {
         // y
         drawY(canvas);
         // X轴超出线
-        canvas.drawLine(yArea.left, yArea.bottom, yArea.right, yArea.bottom, xyPaint);
+//        canvas.drawLine(yArea.left, yArea.bottom, yArea.right, yArea.bottom, xyPaint);
     }
 
     /**
@@ -915,7 +915,6 @@ public class SuitLines extends View {
                                 .subtract(new BigDecimal(Float.toString(minAndMaxOfY[0]))))
                                 .divide(new BigDecimal(Float.toString(absValueOfY)), 2, BigDecimal.ROUND_DOWN)
                 ).floatValue();
-                Log.d(TAG, "calcUnitXY: scale=" + scale);
 
                 datas.get(j).get(i).setXY(new PointF(linesArea.left + realBetween * i,
                         linesArea.top + linesArea.height() * scale + (scale == 0 ? padding : (scale == 1 ? -padding : 0))));

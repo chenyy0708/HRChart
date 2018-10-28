@@ -6,7 +6,6 @@ import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -19,7 +18,9 @@ public class HRChart extends FrameLayout {
     private TextView tvMarker;
     private View diver;
     private TextView mXBgView;
-
+    /**
+     * 第一次触摸偏移量
+     */
     private boolean isFirstInit = true;
 
     public HRChart(@NonNull Context context) {
@@ -132,13 +133,12 @@ public class HRChart extends FrameLayout {
         }
         if (realIndex != -1 && realIndex < suitlines.getDatas().get(0).size()) {
             mXBgView.setVisibility(VISIBLE);
-            Log.d("HRChart", "onTap: " + realIndex);
             // 测量文字的宽高
             int width = (int) Util.getTextWidth(suitlines.getXyPaint(), suitlines.getDatas().get(0).get(realIndex).getExtX());
             int heigth = (int) Util.getTextHeight(suitlines.getXyPaint());
             FrameLayout.LayoutParams lp = (LayoutParams) mXBgView.getLayoutParams();
             lp.width = width + Util.dip2px(6) * 2;
-            lp.height = heigth + Util.dip2px(4) * 2;
+            lp.height = heigth + Util.dip2px(5) * 2;
             mXBgView.setLayoutParams(lp);
             mXBgView.setText(suitlines.getDatas().get(0).get(realIndex).getExtX());
             if (realIndex == 0) {
