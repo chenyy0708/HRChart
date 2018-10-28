@@ -117,14 +117,14 @@ public class HRChart extends FrameLayout {
             lp.height = heigth + Util.dip2px(4) * 2;
             mXBgView.setLayoutParams(lp);
             mXBgView.setText(suitlines.getDatas().get(0).get(realIndex).getExtX());
-//            if (realIndex == 0) {
-//                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) + suitlines.getXyPaint().measureText("00"));
-//            } else if (realIndex == suitlines.getDatas().get(0).size() - 1) {
-//                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) - suitlines.getXyPaint().measureText("00"));
-//            } else {
-//                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2));
-//            }
-            mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2));
+            if (realIndex == 0) {
+                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) + width / 2);
+            } else if (realIndex == suitlines.getDatas().get(0).size() - 1) {
+                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) - width / 2);
+            } else {
+                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2));
+            }
+//            mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2));
             mXBgView.setY(suitlines.getmXTextPoint().get(realIndex).y + suitlines.getBasePadding() + Util.dip2px(2) + Util.dip2px(10));
         }
     }
