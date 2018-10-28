@@ -790,7 +790,7 @@ public class SuitLines extends View {
         // X轴辅助线
         if (xGridBuffer == null) {
             // 可以在这里自定义刻度辅助线的绘制，例如线的类型、颜色、大小等
-            xGridBuffer = Bitmap.createBitmap((int) linesArea.width(), (int) linesArea.height(), Bitmap.Config.ARGB_8888);
+            xGridBuffer = Bitmap.createBitmap((int) realBetween * (datas.get(0).size() - 1), (int) linesArea.height(), Bitmap.Config.ARGB_8888);
             Rect xRect = new Rect(0, 0, xGridBuffer.getWidth(), xGridBuffer.getHeight());
             Canvas xCanvas = new Canvas(xGridBuffer);
             for (int i = 0; i < datas.get(0).size(); i++) { // 折线个数
@@ -802,7 +802,7 @@ public class SuitLines extends View {
                     xAxis = xRect.right;
                     continue; // 最后一个数据不需要画辅助线
                 } else {
-                    xAxis = xRect.right - xRect.width() / (datas.get(0).size() - 1) * i;
+                    xAxis = xRect.right - realBetween * (datas.get(0).size() - 1) / (datas.get(0).size() - 1) * i;
                 }
                 xCanvas.drawLine(xAxis, 0, xAxis, xCanvas.getHeight(), xyPaint);
             }
@@ -980,7 +980,8 @@ public class SuitLines extends View {
      */
     private void calcUnitXY() {
         // X轴最大可见数
-        maxOfVisible = datas.get(0).size();
+//        maxOfVisible = datas.get(0).size();
+        maxOfVisible = 6;
         float absValueOfY = Math.abs(minAndMaxOfY[1] - minAndMaxOfY[0]);
         int realNum = Math.min(datas.get(0).size(), maxOfVisible);
         realBetween = linesArea.width() / (realNum - 1);
