@@ -981,7 +981,7 @@ public class SuitLines extends View {
                 validArea.bottom - Util.getTextHeight(xyPaint) - basePadding * 2);
         xArea = new RectF(yArea.right, yArea.bottom, validArea.right, validArea.bottom);
         linesArea = new RectF(yArea.right + 1, yArea.top, xArea.right, yArea.bottom);
-        if (onChartInitListener != null) onChartInitListener.onChartInit(linesArea);
+        if (onChartInitListener != null) onChartInitListener.onChartInit(yArea);
         hintArea = new RectF(linesArea.right - linesArea.right / 4, linesArea.top,
                 linesArea.right, linesArea.top + linesArea.height() / 4);
     }
