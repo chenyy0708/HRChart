@@ -13,6 +13,7 @@ import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -74,11 +75,6 @@ public class SuitLines extends View {
         setLineStyle(SOLID);
         xyPaint.setTextSize(Util.size2sp(defaultXySize, getContext()));
         xyPaint.setColor(defaultXyColor);
-        hintPaint.setTextSize(Util.size2sp(12, getContext()));
-        hintPaint.setColor(hintColor);
-        hintPaint.setStyle(Paint.Style.STROKE);
-        hintPaint.setStrokeWidth(2);
-        hintPaint.setTextAlign(Paint.Align.CENTER);
     }
 
     private void initOptionalState(Context ctx, AttributeSet attrs) {
@@ -113,10 +109,6 @@ public class SuitLines extends View {
      */
     private Paint xyPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     /**
-     * 点击提示的画笔
-     */
-    private Paint hintPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    /**
      * 默认画笔的颜色，索引0位置为画笔颜色，整个数组为shader颜色
      */
     private int[] defaultLineColor = {Color.parseColor("#6FBA2C")};
@@ -133,6 +125,10 @@ public class SuitLines extends View {
     private List<Path> paths = new ArrayList<>();
     private Path tmpPath = new Path();
     /**
+     * X轴文字对应的X，y坐标
+     */
+    private List<Point> mXTextPoint = new ArrayList<>();
+    /**
      * fill形态下时，边缘线画笔
      */
     Paint coverLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -148,10 +144,6 @@ public class SuitLines extends View {
      * 所有数据集的动画
      */
     private List<ValueAnimator> animators = new ArrayList<>();
-    /**
-     * line的点击效果
-     */
-    private ValueAnimator clickHintAnimator;
     /**
      * 当前正在动画的那组数据
      */
@@ -315,7 +307,6 @@ public class SuitLines extends View {
                 scroller.abortAnimation();
                 initOrResetVelocityTracker();
                 velocityTracker.addMovement(event);
-                onTap(event.getX(), event.getY());
                 onChartTouchListener.OnChartTouchDown(event.getX(), event.getY());
                 super.onTouchEvent(event);
                 return true;
@@ -334,7 +325,6 @@ public class SuitLines extends View {
                         edgeEffectRight.onPull(Math.abs(orientationX) / linesArea.height());
                     }
                 }
-                onTap(event.getX(), event.getY());
                 onChartTouchListener.OnChartTouchMove(event.getX(), event.getY());
                 break;
             case MotionEvent.ACTION_POINTER_UP: // 计算出正确的追踪手指
@@ -355,7 +345,6 @@ public class SuitLines extends View {
                     boolean canCallTap = Math.abs(event.getX() - firstX) < 2
                             && Math.abs(event.getY() - firstY) < 2;
                     if (canCallTap) {
-                        onTap(event.getX(), event.getY());
                     }
                 }
                 velocityTracker.addMovement(event);
@@ -371,8 +360,6 @@ public class SuitLines extends View {
                     edgeEffectRight.onRelease();
                 }
                 lastX = event.getX();
-                // 隐藏marker
-                hintPaint.setAlpha(255);
                 clickIndexs = null;
                 postInvalidate();
                 onChartTouchListener.OnChartTouchUp(event.getX(), event.getY());
@@ -491,67 +478,6 @@ public class SuitLines extends View {
         offset += deltaX;
         offset = offset > 0 ? 0 : (Math.abs(offset) > maxOffset) ? -maxOffset : offset;
         invalidate();
-    }
-
-
-    private void onTap(float upX, float upY) {
-        upX -= offset;
-        RectF bak = new RectF(linesArea);
-        bak.offset(-offset, 0);
-        if (datas.isEmpty() || !bak.contains(upX, upY)) {
-            return;
-        }
-        float index = (upX - linesArea.left) / realBetween;
-        int realIndex = -1;
-        if ((index - (int) index) > 0.6f) {
-            realIndex = (int) index + 1;
-        } else if ((index - (int) index) < 0.4f) {
-            realIndex = (int) index;
-        }
-        if (realIndex != -1) {
-            int mostMatchY = -1;
-            for (int i = 0; i < datas.size(); i++) {
-                float cur = Math.abs(datas.get(i).get(realIndex).getXY().y - upY);
-                if (cur <= clickSlop) {
-                    if (mostMatchY != -1) {
-                        if (Math.abs(datas.get(mostMatchY).get(realIndex).getXY().y - upY) > cur) {
-                            mostMatchY = i;
-                        }
-                    } else {
-                        mostMatchY = i;
-                    }
-                }
-            }
-            if (mostMatchY != -1) {
-                if (clickHintAnimator != null && clickHintAnimator.isRunning()) {
-                    clickHintAnimator.removeAllUpdateListeners();
-                    clickHintAnimator.cancel();
-                    hintPaint.setAlpha(255);
-                    clickIndexs = null;
-                    invalidate();
-                }
-                clickIndexs = new int[]{realIndex, mostMatchY};
-                hintPaint.setAlpha(0);
-                postInvalidate();
-//                clickHintAnimator = ValueAnimator.ofInt(100, 30);
-//                clickHintAnimator.setDuration(800);
-//                clickHintAnimator.setInterpolator(linearInterpolator);
-//                clickHintAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//                    @Override
-//                    public void onAnimationUpdate(ValueAnimator animation) {
-//                        int cur = (Integer) animation.getAnimatedValue();
-//                        if (cur <= 30) {
-//                            hintPaint.setAlpha(100);
-//                            clickIndexs = null;
-//                        } else {
-//                            hintPaint.setAlpha(cur);
-//                        }
-//                        postInvalidate();
-//                    }
-//                });
-//                clickHintAnimator.start();
-            }
-        }
     }
 
     private void initOrResetVelocityTracker() {
@@ -747,31 +673,6 @@ public class SuitLines extends View {
     }
 
     /**
-     * 画提示文本和辅助线
-     *
-     * @param canvas
-     */
-    private void drawClickHint(Canvas canvas) {
-        Unit cur = datas.get(clickIndexs[1]).get(clickIndexs[0]);
-//        canvas.drawLine(datas.get(clickIndexs[1]).get(suitEdge[0]).getXY().x, cur.getXY().y,
-//                datas.get(clickIndexs[1]).get(suitEdge[1]).getXY().x, cur.getXY().y, hintPaint);
-        canvas.drawLine(cur.getXY().x, linesArea.bottom,
-                cur.getXY().x, linesArea.top, hintPaint);
-        RectF bak = new RectF(hintArea);
-        bak.offset(-offset, 0);
-        hintPaint.setAlpha(255);
-        hintPaint.setStyle(Paint.Style.FILL);
-        canvas.drawRect(bak, hintPaint);
-        hintPaint.setColor(Color.WHITE);
-//        if (!TextUtils.isEmpty(cur.getExtX())) {
-//            canvas.drawText("x : " + cur.getExtX(), bak.centerX(), bak.centerY() - 12, hintPaint);
-//        }
-        canvas.drawText(String.valueOf(cur.getValue()), bak.centerX(),
-                bak.centerY() + 12 + Util.getTextHeight(hintPaint), hintPaint);
-        hintPaint.setColor(hintColor);
-    }
-
-    /**
      * 画x轴,默认取第一条线的值
      *
      * @param canvas
@@ -781,6 +682,7 @@ public class SuitLines extends View {
     private void drawX(Canvas canvas, int startIndex, int endIndex) {
         canvas.drawLine(datas.get(0).get(startIndex).getXY().x, xArea.top,
                 datas.get(0).get(endIndex).getXY().x, xArea.top, xyPaint);
+        mXTextPoint.clear();
         for (int i = startIndex; i <= endIndex; i++) {
             String extX = datas.get(0).get(i).getExtX();
             if (TextUtils.isEmpty(extX)) {
@@ -793,6 +695,7 @@ public class SuitLines extends View {
             } else {
                 xyPaint.setTextAlign(Paint.Align.CENTER);
             }
+            mXTextPoint.add(new Point((int) datas.get(0).get(i).getXY().x, (int) Util.calcTextSuitBaseY(xArea, xyPaint)));
             canvas.drawText(extX, datas.get(0).get(i).getXY().x, Util.calcTextSuitBaseY(xArea, xyPaint), xyPaint);
             // X轴刻度线
 //            canvas.drawLine(datas.get(0).get(i).getXY().x, xArea.top,
@@ -1027,12 +930,6 @@ public class SuitLines extends View {
         // 不使用ViewRootImpl的getHandler()，否则影响其事件分发
         handler.removeCallbacksAndMessages(null);
         scroller.abortAnimation();
-        if (clickHintAnimator != null && clickHintAnimator.isRunning()) {
-            clickHintAnimator.removeAllUpdateListeners();
-            clickHintAnimator.cancel();
-            hintPaint.setAlpha(255);
-            clickHintAnimator = null;
-        }
         if (!animators.isEmpty()) {
             for (int i = 0; i < animators.size(); i++) {
                 animators.get(i).removeAllUpdateListeners();
@@ -1255,7 +1152,6 @@ public class SuitLines extends View {
     public void setHintColor(int hintColor) {
         needShowHint = true;
         this.hintColor = hintColor;
-        hintPaint.setColor(hintColor);
         if (!datas.isEmpty()) {
             if (clickIndexs != null) {
                 postInvalidate();
@@ -1511,6 +1407,34 @@ public class SuitLines extends View {
 
     private onChartTouchListener onChartTouchListener;
     private onChartInitListener onChartInitListener;
+
+    public Map<Integer, List<Unit>> getDatas() {
+        return datas;
+    }
+
+    public int getClickSlop() {
+        return clickSlop;
+    }
+
+    public float getRealBetween() {
+        return realBetween;
+    }
+
+    public int getBasePadding() {
+        return basePadding;
+    }
+
+    public RectF getLinesArea() {
+        return linesArea;
+    }
+
+    public Paint getXyPaint() {
+        return xyPaint;
+    }
+
+    public List<Point> getmXTextPoint() {
+        return mXTextPoint;
+    }
 
     public void setOnChartInitListener(SuitLines.onChartInitListener onChartInitListener) {
         this.onChartInitListener = onChartInitListener;
