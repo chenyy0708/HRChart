@@ -20,6 +20,8 @@ public class HRChart extends FrameLayout {
     private View diver;
     private TextView mXBgView;
 
+    private boolean isFirstInit = true;
+
     public HRChart(@NonNull Context context) {
         this(context, null);
     }
@@ -38,21 +40,41 @@ public class HRChart extends FrameLayout {
         View.inflate(mContext, R.layout.view_hrchart, this);
         suitlines = findViewById(R.id.suitlines);
         tvMarker = findViewById(R.id.tv_marker);
-
+        // 图表触摸事件
         suitlines.setOnChartTouchListener(new SuitLines.onChartTouchListener() {
             @Override
             public void OnChartTouchDown(float downX, float downY) {
                 tvMarker.setVisibility(VISIBLE);
                 diver.setVisibility(VISIBLE);
-                diver.setX(downX - (diver.getWidth() / 2));
-                tvMarker.setX(downX - (tvMarker.getWidth() / 2));
+                int minX = suitlines.getmXTextPoint().get(0).x;
+                int maxX = suitlines.getmXTextPoint().get(suitlines.getDatas().get(0).size() - 1).x;
+                if (downX <= minX) {
+                    tvMarker.setX(minX - (tvMarker.getWidth() / 2));
+                    diver.setX(minX - (diver.getWidth() / 2));
+                } else if (downX >= maxX) {
+                    tvMarker.setX(maxX - (tvMarker.getWidth() / 2));
+                    diver.setX(maxX - (diver.getWidth() / 2));
+                } else {
+                    tvMarker.setX(downX - (tvMarker.getWidth() / 2));
+                    diver.setX(downX - (diver.getWidth() / 2));
+                }
                 onTap(downX);
             }
 
             @Override
             public void OnChartTouchMove(float moveX, float moveY) {
-                tvMarker.setTranslationX(moveX - (tvMarker.getWidth() / 2));
-                diver.setTranslationX(moveX - (diver.getWidth() / 2));
+                int minX = suitlines.getmXTextPoint().get(0).x;
+                int maxX = suitlines.getmXTextPoint().get(suitlines.getDatas().get(0).size() - 1).x;
+                if (moveX <= minX) {
+                    tvMarker.setTranslationX(minX - (tvMarker.getWidth() / 2));
+                    diver.setTranslationX(minX - (diver.getWidth() / 2));
+                } else if (moveX >= maxX) {
+                    tvMarker.setTranslationX(maxX - (tvMarker.getWidth() / 2));
+                    diver.setTranslationX(maxX - (diver.getWidth() / 2));
+                } else {
+                    tvMarker.setTranslationX(moveX - (tvMarker.getWidth() / 2));
+                    diver.setTranslationX(moveX - (diver.getWidth() / 2));
+                }
                 onTap(moveX);
             }
 
@@ -96,6 +118,8 @@ public class HRChart extends FrameLayout {
     }
 
     private void onTap(float upX) {
+        // 第一次触摸偏移量
+        int offstX = isFirstInit ? Util.dip2px(11.8f) : 0;
         if (suitlines.getDatas().isEmpty()) {
             return;
         }
@@ -118,15 +142,16 @@ public class HRChart extends FrameLayout {
             mXBgView.setLayoutParams(lp);
             mXBgView.setText(suitlines.getDatas().get(0).get(realIndex).getExtX());
             if (realIndex == 0) {
-                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) + width / 2);
+                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) + width / 2 + offstX);
             } else if (realIndex == suitlines.getDatas().get(0).size() - 1) {
-                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) - width / 2);
+                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) - width / 2 + offstX);
             } else {
-                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2));
+                mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2) + offstX);
             }
-            tvMarker.setText(String.valueOf((int)suitlines.getDatas().get(0).get(realIndex).getValue()));
+            tvMarker.setText(String.valueOf((int) suitlines.getDatas().get(0).get(realIndex).getValue()));
 //            mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2));
             mXBgView.setY(suitlines.getmXTextPoint().get(realIndex).y + suitlines.getBasePadding() + Util.dip2px(2) + Util.dip2px(10));
+            isFirstInit = false;
         }
     }
 

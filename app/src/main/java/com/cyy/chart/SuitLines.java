@@ -75,6 +75,7 @@ public class SuitLines extends View {
         setLineStyle(SOLID);
         xyPaint.setTextSize(Util.size2sp(defaultXySize, getContext()));
         xyPaint.setColor(defaultXyColor);
+        xyGridPaint.setColor(Color.parseColor("#F1F1F1"));
     }
 
     private void initOptionalState(Context ctx, AttributeSet attrs) {
@@ -108,6 +109,10 @@ public class SuitLines extends View {
      * x，y轴对应的画笔
      */
     private Paint xyPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /**
+     * x，y轴辅助线对应画笔
+     */
+    private Paint xyGridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     /**
      * 默认画笔的颜色，索引0位置为画笔颜色，整个数组为shader颜色
      */
