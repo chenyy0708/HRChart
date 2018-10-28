@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <FrameLayout
@@ -20,7 +21,7 @@
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:paddingTop="4dp"
-            android:text="300"
+            tools:text="300"
             android:textColor="#FFF"
             android:textSize="12sp"
             android:visibility="invisible" />

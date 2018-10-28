@@ -124,6 +124,7 @@ public class HRChart extends FrameLayout {
             } else {
                 mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2));
             }
+            tvMarker.setText(String.valueOf((int)suitlines.getDatas().get(0).get(realIndex).getValue()));
 //            mXBgView.setX(suitlines.getmXTextPoint().get(realIndex).x - (mXBgView.getWidth() / 2));
             mXBgView.setY(suitlines.getmXTextPoint().get(realIndex).y + suitlines.getBasePadding() + Util.dip2px(2) + Util.dip2px(10));
         }
