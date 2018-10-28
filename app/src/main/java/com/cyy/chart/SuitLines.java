@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -22,7 +21,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -57,8 +55,6 @@ public class SuitLines extends View {
 
     public SuitLines(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        initOptionalState(context, attrs);
-
         basePadding = Util.dip2px(basePadding);
         maxVelocity = ViewConfiguration.get(context).getScaledMaximumFlingVelocity();
         clickSlop = ViewConfiguration.get(context).getScaledEdgeSlop();
@@ -77,22 +73,6 @@ public class SuitLines extends View {
         xyPaint.setColor(defaultXyColor);
         xyGridPaint.setColor(Color.parseColor("#F1F1F1"));
     }
-
-    private void initOptionalState(Context ctx, AttributeSet attrs) {
-        TypedArray ta = ctx.obtainStyledAttributes(attrs, R.styleable.suitlines);
-        defaultXySize = ta.getFloat(R.styleable.suitlines_xySize, defaultXySize);
-        defaultXyColor = ta.getColor(R.styleable.suitlines_xyColor, defaultXyColor);
-        lineType = ta.getInt(R.styleable.suitlines_lineType, SEGMENT);
-        lineStyle = ta.getInt(R.styleable.suitlines_lineStyle, SOLID);
-        needEdgeEffect = ta.getBoolean(R.styleable.suitlines_needEdgeEffect, needEdgeEffect);
-        edgeEffectColor = ta.getColor(R.styleable.suitlines_colorEdgeEffect, edgeEffectColor);
-        needShowHint = ta.getBoolean(R.styleable.suitlines_needClickHint, needShowHint);
-        hintColor = ta.getColor(R.styleable.suitlines_colorHint, hintColor);
-        maxOfVisible = ta.getInt(R.styleable.suitlines_maxOfVisible, maxOfVisible);
-        countOfY = ta.getInt(R.styleable.suitlines_countOfY, countOfY);
-        ta.recycle();
-    }
-
 
     // 创建自己的Handler，与ViewRootImpl的Handler隔离，方便detach时remove。
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -253,7 +233,7 @@ public class SuitLines extends View {
     /**
      * 点击是否弹出额外信息
      */
-    private boolean needShowHint = true;
+    private boolean needShowHint = false;
     /**
      * 实际的点击位置，0为x索引，1为某条line
      */
@@ -502,8 +482,8 @@ public class SuitLines extends View {
 
     /**
      * 是否滑动到了左边缘，注意，并非指可视区域的边缘，下同
-     *
-     * @return
+     * <p>
+     * 3@return
      */
     private boolean isArriveAtLeftEdge() {
         return offset == 0 && orientationX > 0;
