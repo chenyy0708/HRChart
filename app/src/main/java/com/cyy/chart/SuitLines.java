@@ -208,6 +208,10 @@ public class SuitLines extends View {
      */
     private float realBetween;
     /**
+     * Y轴最长文字的长度
+     */
+    private float yMaxTextLength = 0;
+    /**
      * 手指/fling的上次位置
      */
     private float lastX;
@@ -265,11 +269,11 @@ public class SuitLines extends View {
     /**
      * 是否显示y轴的辅助刻度线
      */
-    private boolean showYGrid = false;
+    private boolean showYGrid = true;
     /**
      * 是否显示x轴的辅助刻度线
      */
-    private boolean showXGrid = false;
+    private boolean showXGrid = true;
 
     /**
      * lines在当前可见区域的边缘点
@@ -818,21 +822,21 @@ public class SuitLines extends View {
             // Y轴线
 //            yCanvas.drawLine(yRect.right, yRect.bottom, yRect.right, yRect.top, xyPaint);
             for (int i = 0; i < countOfY; i++) {
-                xyPaint.setTextAlign(Paint.Align.RIGHT);
+                xyPaint.setTextAlign(Paint.Align.LEFT);
                 float extY;
                 float y, yAxis;
                 if (i == 0) {
                     extY = minAndMaxOfY[0];
-                    y = yAxis = yRect.bottom - basePadding; // 跟X轴有一定的距离
+                    y = yAxis = yRect.bottom; // 跟X轴有一定的距离
                 } else if (i == countOfY - 1) {
                     extY = minAndMaxOfY[1];
-                    y = yRect.top + Util.getTextHeight(xyPaint) + 3 + basePadding;
+                    y = yRect.top + Util.getTextHeight(xyPaint) + 3;
                     yAxis = yRect.top;
                 } else {
                     extY = minAndMaxOfY[0] + (minAndMaxOfY[1] - minAndMaxOfY[0]) / (countOfY - 1) * i;
                     y = yAxis = yRect.bottom - yRect.height() / (countOfY - 1) * i + Util.getTextHeight(xyPaint) / 2;
                 }
-                yCanvas.drawText(String.valueOf((int) extY), yRect.right - basePadding, y, xyPaint);
+                yCanvas.drawText(String.valueOf((int) extY), yRect.right - (3 * basePadding), y, xyPaint);
                 // Y轴刻度线
 //                yCanvas.drawLine(yRect.right - basePadding, yAxis, yRect.right, yAxis, xyPaint);
             }

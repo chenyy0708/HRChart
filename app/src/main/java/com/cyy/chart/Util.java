@@ -43,8 +43,11 @@ class Util {
         return -textPaint.ascent() - textPaint.descent();
     }
 
-    static float getTextWidth(Paint textPaint) {
-        return -textPaint.ascent() - textPaint.descent();
+    /**
+     * 测量文本的宽度
+     */
+    static float getTextWidth(Paint textPaint, String str) {
+        return textPaint.measureText(str);
     }
 
     static void trySetColorForEdgeEffect(EdgeEffect edgeEffect, int color) {
